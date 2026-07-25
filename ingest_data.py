@@ -65,9 +65,9 @@ for i, doc in enumerate(documents):
 
     # Create record for Pinecone (v9+ format)
     record = {
-        "id": f"doc_{i+1}",  # Correct - use 'id' not '_id'
+        "id": f"doc_{i+1}",
         "values": embedding,
-        "metadata": doc["metadata"],
+        "metadata": {**doc["metadata"], "text": doc["text"]},
     }
     records.append(record)
     print(f"Generated embedding for doc {i+1}")
