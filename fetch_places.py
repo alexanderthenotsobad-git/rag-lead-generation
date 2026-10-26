@@ -9,15 +9,31 @@ if not API_KEY:
     raise ValueError("GOOGLE_PLACES_API_KEY not found in .env file")
 
 
-def search_restaurants(location, max_results=10):
-    """Search for restaurants in a given location using the Places API (New)."""
+def search_restaurants(max_results=20):
+    """Search for mid-priced restaurants near zip 90018."""
     url = "https://places.googleapis.com/v1/places:searchText"
     headers = {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": API_KEY,
         "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.location,places.id",
     }
-    payload = {"textQuery": f"restaurants in {location}", "maxResultCount": max_results}
+    payload = {
+        "textQuery": "restaurants",
+        "maxResultCount": max_results,
+        "locationRestriction": {
+            "rectangle": {
+                "low": {
+                    "latitude": 34.0000,
+                    "longitude": -118.3400
+                },
+                "high": {
+                    "latitude": 34.0600,
+                    "longitude": -118.2900
+                }
+            }
+        },
+        "priceLevels": ["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"]
+    }
 
     response = requests.post(url, headers=headers, json=payload)
 
@@ -29,47 +45,15 @@ def search_restaurants(location, max_results=10):
         return []
 
 
-def get_place_details(place_id):
-    """Fetch detailed information and reviews for a specific place."""
-    url = f"https://places.googleapis.com/v1/places/{place_id}"
-    headers = {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": API_KEY,
-        "X-Goog-FieldMask": "displayName,formattedAddress,rating,priceLevel,reviews,types",
-    }
+# --- Test the function ---
+print("Searching for mid-priced restaurants near zip 90018...")
+places = search_restaurants(20)
 
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching details: {response.status_code}")
-        return None
-
-
-# --- Test the functions ---
-print("Searching for restaurants in Venice, Los Angeles...")
-places = search_restaurants("Venice, Los Angeles", 5)
-
-print(f"\nFound {len(places)} restaurants in Venice:")
+print(f"\nFound {len(places)} restaurants:")
 for place in places:
     print(f"- {place.get('displayName', {}).get('text', 'N/A')}")
+    print(f"  ID: {place.get('id', 'N/A')}")   
     print(f"  Address: {place.get('formattedAddress', 'N/A')}")
     print(f"  Rating: {place.get('rating', 'N/A')}")
     print(f"  Price Level: {place.get('priceLevel', 'N/A')}")
     print("-" * 40)
-
-# Get details for the first restaurant
-if places:
-    first_place_id = places[0].get("id")
-    if first_place_id:
-        place_name = places[0].get("displayName", {}).get("text", "N/A")
-        print(f"\nFetching details and reviews for: {place_name}")
-        details = get_place_details(first_place_id)
-
-        if details:
-            reviews = details.get("reviews", [])
-            print(f"Found {len(reviews)} reviews:")
-            for review in reviews[:3]:
-                review_text = review.get("text", {}).get("text", "")
-                print(f"- {review.get('rating', 'N/A')}⭐: {review_text[:100]}...")

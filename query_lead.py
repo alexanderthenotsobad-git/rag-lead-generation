@@ -1,46 +1,65 @@
 import os
 from dotenv import load_dotenv
 from pinecone import Pinecone
-from google import genai
+from huggingface_hub import InferenceClient
+from openai import OpenAI
 
 load_dotenv()
 
-# --- 1. Configure Google Gemini ---
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+# --- 1. Configure Huggingface for embeddings ---
+HF_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+hf_client = InferenceClient(token=HF_TOKEN)
 
 
 def get_embedding(text):
-    """Generate embedding using Gemini's embedding model."""
-    result = client.models.embed_content(
-        model="models/gemini-embedding-2",
-        contents=text,
-        config={"output_dimensionality": 768},
+    """Generate embedding using Hugging Face Inference API."""
+    response = hf_client.feature_extraction(
+        text, model="sentence-transformers/all-MiniLM-L6-v2"
     )
-    return result.embeddings[0].values
+    return response
 
 
-# --- 2. Connect to Pinecone ---
+# --- 2. Configure DeepSeek for LLM generation ---
+def generate_llm_response(prompt):
+    """Generate response using DeepSeek's chat model."""
+    client = OpenAI(
+        api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com"
+    )
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a B2B sales analyst for an AI-powered restaurant menu app.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.7,
+        max_tokens=500,
+    )
+    return response.choices[0].message.content
+
+
+# --- 3. Connect to Pinecone ---
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 index_name = os.getenv("PINECONE_INDEX_NAME")
 index = pc.Index(index_name)
 
 print(f"Connected to Pinecone index: {index_name}")
 
-# --- 3. Perform a Lead Generation Query ---
-# Pre-filter by metadata: only $$$ restaurants in certain areas
+# --- 4. Perform a Lead Generation Query ---
 filter_conditions = {
-    "$and": [
-        {"neighborhood": {"$in": ["Venice", "Downtown"]}},
-        {"price_tier": {"$in": ["$$", "$$$"]}},
-    ]
+    "price_level": {"$in": ["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"]}
 }
 print(f"Applying metadata filter: {filter_conditions}")
 
-# Semantic query
-query_text = "customers frustrated by complex menu terms and expensive ingredients"
+query_text = "restaurant with complex menu and dietary questions"
 query_vector = get_embedding(query_text)
 
-# Search Pinecone
+# Convert numpy array to Python list
+if hasattr(query_vector, "tolist"):
+    query_vector = query_vector.tolist()
+
 results = index.query(
     vector=query_vector,
     top_k=3,
@@ -57,12 +76,11 @@ for i, match in enumerate(results["matches"]):
     print(f"  Metadata: {match['metadata']}")
     context_text += f"{match['metadata'].get('text', '')}\n"
 
-# --- 4. Generate B2B Pitch with Gemini LLM ---
+# --- 5. Generate B2B Pitch with DeepSeek ---
 if not results["matches"]:
     print("No relevant restaurants found.")
 else:
     prompt = f"""
-You are a B2B sales analyst for an AI-powered restaurant menu app.
 Based on the following customer reviews and context, write a one-paragraph pitch
 to the restaurant owner on why our app would solve their problem.
 
@@ -71,8 +89,6 @@ Context from reviews:
 
 Pitch:
 """
-    response = client.models.generate_content(
-        model="models/gemini-3.6-flash", contents=prompt
-    )
+    response_text = generate_llm_response(prompt)
     print("\n--- Generated B2B Pitch ---")
-    print(response.text)
+    print(response_text)
