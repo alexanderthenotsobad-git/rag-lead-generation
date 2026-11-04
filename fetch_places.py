@@ -22,17 +22,11 @@ def search_restaurants(max_results=20):
         "maxResultCount": max_results,
         "locationRestriction": {
             "rectangle": {
-                "low": {
-                    "latitude": 34.0000,
-                    "longitude": -118.3400
-                },
-                "high": {
-                    "latitude": 34.0600,
-                    "longitude": -118.2900
-                }
+                "low": {"latitude": 34.0000, "longitude": -118.3400},
+                "high": {"latitude": 34.0600, "longitude": -118.2900},
             }
         },
-        "priceLevels": ["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"]
+        "priceLevels": ["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"],
     }
 
     response = requests.post(url, headers=headers, json=payload)
@@ -52,7 +46,7 @@ places = search_restaurants(20)
 print(f"\nFound {len(places)} restaurants:")
 for place in places:
     print(f"- {place.get('displayName', {}).get('text', 'N/A')}")
-    print(f"  ID: {place.get('id', 'N/A')}")   
+    print(f"  ID: {place.get('id', 'N/A')}")
     print(f"  Address: {place.get('formattedAddress', 'N/A')}")
     print(f"  Rating: {place.get('rating', 'N/A')}")
     print(f"  Price Level: {place.get('priceLevel', 'N/A')}")

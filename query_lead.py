@@ -53,7 +53,12 @@ filter_conditions = {
 }
 print(f"Applying metadata filter: {filter_conditions}")
 
-query_text = "restaurant with complex menu and dietary questions"
+query_text = (
+    "Customers frustrated by confusing or complex menus, unable to understand what "
+    "dishes contain, asking for nutritional information or calorie counts, wishing "
+    "for healthier options, or requesting vegan, gluten-free, or high-protein "
+    "choices that the restaurant does not clearly offer."
+)
 query_vector = get_embedding(query_text)
 
 # Convert numpy array to Python list
@@ -81,13 +86,14 @@ if not results["matches"]:
     print("No relevant restaurants found.")
 else:
     prompt = f"""
-Based on the following customer reviews and context, write a one-paragraph pitch
-to the restaurant owner on why our app would solve their problem.
+Based on the following customer reviews, identify whether this restaurant's customers
+express frustration with menu complexity, lack of dietary information, or a desire for
+healthier options. If they do, write a one-paragraph B2B pitch explaining how our
+AI-powered menu app solves that specific problem. If the reviews do not contain those
+signals, respond only with: "No relevant pain points found."
 
 Context from reviews:
 {context_text}
-
-Pitch:
 """
     response_text = generate_llm_response(prompt)
     print("\n--- Generated B2B Pitch ---")
