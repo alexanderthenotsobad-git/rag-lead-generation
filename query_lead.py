@@ -53,12 +53,7 @@ filter_conditions = {
 }
 print(f"Applying metadata filter: {filter_conditions}")
 
-query_text = (
-    "Customers frustrated by confusing or complex menus, unable to understand what "
-    "dishes contain, asking for nutritional information or calorie counts, wishing "
-    "for healthier options, or requesting vegan, gluten-free, or high-protein "
-    "choices that the restaurant does not clearly offer."
-)
+query_text = "Customers complaining the restaurant had no vegan, gluten-free, or healthy options, couldn't tell what ingredients were in a dish, found the menu confusing or hard to read, or got sick because dietary information was unclear."
 query_vector = get_embedding(query_text)
 
 # Convert numpy array to Python list
@@ -67,7 +62,7 @@ if hasattr(query_vector, "tolist"):
 
 results = index.query(
     vector=query_vector,
-    top_k=3,
+    top_k=20,
     filter=filter_conditions,
     namespace="restaurants",
     include_metadata=True,

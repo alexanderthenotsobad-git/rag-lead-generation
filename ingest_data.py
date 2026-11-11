@@ -46,8 +46,8 @@ def fetch_restaurants(max_results=20):
         "maxResultCount": max_results,
         "locationRestriction": {
             "rectangle": {
-                "low": {"latitude": 34.0000, "longitude": -118.3400},
-                "high": {"latitude": 34.0600, "longitude": -118.2900},
+                "low": {"latitude": 34.0200, "longitude": -118.2800},
+                "high": {"latitude": 34.0700, "longitude": -118.2200},
             }
         },
         "priceLevels": ["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"],
