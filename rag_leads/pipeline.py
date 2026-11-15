@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Iterable, Sequence
 
+from .gates import gate_review
 from .util import dedupe_texts
 
 DEFAULT_QUERY = (
@@ -86,6 +87,7 @@ def build_records(place: dict, reviews: Sequence[dict]) -> list[dict]:
             "review_index": len(records),
             "text": text,
         }
+        metadata.update(gate_review(text, review.get("rating")))
         for key in ("rating", "review_count"):
             value = place.get(key)
             if value is not None:

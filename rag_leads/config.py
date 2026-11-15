@@ -42,6 +42,15 @@ MAX_EMBED_CHARS = 1_000
 # low/high pairs are rejected with HTTP 400.
 DEFAULT_BOX = ((34.0200, -118.2800), (34.0700, -118.2200))
 
+# Santa Monica and the beach edge (includes the Venice border).  Keep this as a
+# named preset so an area run does not depend on remembering coordinates.
+SANTA_MONICA_BOX = ((33.9800, -118.5200), (34.0500, -118.4300))
+
+AREA_BOXES = {
+    "central-la": DEFAULT_BOX,
+    "santa-monica": SANTA_MONICA_BOX,
+}
+
 
 class ConfigError(RuntimeError):
     """Raised when required configuration is missing or invalid."""

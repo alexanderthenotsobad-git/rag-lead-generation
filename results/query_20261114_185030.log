@@ -1,0 +1,79 @@
+Mode: LIVE
+Index: rag-lead-idx / namespace restaurants
+Filter: price_level in ['PRICE_LEVEL_MODERATE', 'PRICE_LEVEL_EXPENSIVE']
+Classifier: on
+Query: Customers with a food allergy, intolerance, or celiac disease who could not get clear information about ingredients, allergens, or cross-con...
+
+Retrieved 50 chunks across 11 restaurant(s).
+
+========================================================================
+1. Drago Centro  (score 0.3887, PRICE_LEVEL_MODERATE)
+   525 Flower St, Los Angeles, CA 90071, USA
+   Candidates: 2 | complaints: 0
+   Top retrieved evidence:
+     - This place is still out performing newer, hipper Italian options. Genuinely impressive how delicious and playful the menu has remained. Also, huge shoutout to the amazing service and options for celiacs. If you are gluten free, the staff an
+     - Lovely little dining experience - had wonderful service and the tastiest handmade pasta. Nutella Profiteroles for dessert ❤️
+     - Phenomenal staff and the chef goes above and beyond. If you appreciate Italian cuisine, the food is divine.<br><br>The Caesar salad appears as if it wouldn’t be filling, but it is and the flavors are great.<br><br>My brother and I shared ca
+     - Service from all staff was top notch. However, pretty much the majority of menu items are seafood based or nearly raw beef and duck. The atmosphere is very close quarters with tables placed withing 18-20" of one another and from that it get
+     - Had a business dinner here, very accommodating to changing reservation numbers.<br><br>Really great food - the most interesting was the octopus (picture attached) which was cooked to perfection. All the other dishes were good but to be expe
+
+   Pitch: No relevant pain points found.
+
+========================================================================
+2. Bottega Louie  (score 0.3505, PRICE_LEVEL_MODERATE)
+   700 S Grand Ave, Los Angeles, CA 90017, USA
+   Candidates: 2 | complaints: 0
+   Top retrieved evidence:
+     - Very disappointing experience. I spent $31 on two pieces of bread and a coffee, and expected much better. The tables were dirty, service was inattentive, and no one seemed to be cleaning or helping customers. I was especially shocked to see
+     - Overall: skip the restaurant, get desserts to go<br><br>My partner and I had brunch here over the weekend. I'd only ever had Bottega Louie's desserts off-site/delivered, so I was surprised at the atmosphere I walked into. The dining room is
+     - Food here has always been consistently delicious and rhe service is warm and friendly.  Spe I'll shout out to our server, Jenny who took great care of us and made our dining experience extra special!
+     - My partner and I had a reservation for this restaurant and as soon as we walked in, we were greeted with the smell of desserts and snacks. The style of the restaurant is immaculate as there's a golden/white sparkling when entering, similar 
+     - Made an online reservation for brunch on Sat and was seated immediately when we arrived. The restaurant was more than half full and wasn’t too crowded, though there was definitely a constant stream of customers coming in.<br><br>First of al
+
+   Pitch: No relevant pain points found.
+
+========================================================================
+3. Girl & the Goat Los Angeles  (score 0.3372, PRICE_LEVEL_EXPENSIVE)
+   555-3 Mateo St, Los Angeles, CA 90013, USA
+   Candidates: 2 | complaints: 0
+   Top retrieved evidence:
+     - This was our first time dining here, and it had been on our to-do list for quite some time, especially knowing that an Iron Chef is the owner. My wife and I met up with another couple for dinner and were excited to finally give it a try.<br
+     - Oh my god. I LOVE this restaurant!<br><br>I came for brunch and honestly wanted to stay all day. The restaurant is beautiful, the service was fantastic, and they were incredibly accommodating with my food allergies.<br><br>I ordered the con
+     - I’d highlight David’s recommendations, the fact that every dish was seasoned well enough that you didn’t even miss having rice, and the changing menu as reasons to return.<br><br>Came to Girl & the Goat in the Arts District with my friends 
+     - A friend gave us a gift card for this place so we finally gave it a go and wow, so glad we did!<br>Had no idea where it was and found it’s in a super cool, hip and clean area downtown, with plenty street parking and parking lots nearby.<br>
+     - We loved our entire experience here! The food was amazing, the service was prompt, and the ambience was intimate and friendly. Our server was very knowledgeable about the different dishes and wines available, and dishes were delivered to th
+
+   Pitch: No relevant pain points found.
+
+========================================================================
+4. Johnny's Pastrami  (score 0.3333, PRICE_LEVEL_MODERATE)
+   4327 W Adams Blvd, Los Angeles, CA 90018, USA
+   Candidates: 0 | complaints: 0
+   Top retrieved evidence:
+     - *This place isn’t that great*
+
+NAAAAAHHHH IM KIDDING!
+
+This place is amazing! I cannot think of one thing to complain about.
+
+Parking: Found a spot with ease.
+Customer Service:  Amazing!
+Food: PHENOMENAL!
+
+I’ve lived in LA for almost 10yrs 
+     - The pastrami tacos are so good. Green goddess salad always super fresh and crisp and with a lot of veggies other than just salad. Pretty good value also. And great to take next door on a nice afternoon to have with a cocktail in the patio a
+
+   Pitch: No relevant pain points found.
+
+========================================================================
+5. Taylor's Steak House  (score 0.3290, PRICE_LEVEL_EXPENSIVE)
+   3361 W 8th St, Los Angeles, CA 90005, USA
+   Candidates: 0 | complaints: 0
+   Top retrieved evidence:
+     - Food was okay but what I experienced here was unpleasant.
+
+The server got the order wrong, extrachaging a bottle of alchol. We told him there was a mistake on the bill but he refused to correct it. We strived to point out what was wrong wit
+     - Taylor’s Steak House had been on my Los Angeles steakhouse bucket list for a while, and I’m glad I finally made it. The moment I walked through the door, I knew I had found exactly the classic old-school steakhouse atmosphere I was looking 
+     - Been here twice without reservations, first time we were sat at a booth right away, second time we were told the wait would be about 2.5 hours unless we were willing to sit at the bar, once at the bar for 10 minutes or so we got offered a s
+
+   Pitch: No relevant pain points found.

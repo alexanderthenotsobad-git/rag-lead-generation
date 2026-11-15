@@ -231,6 +231,18 @@ def _matches_filter(metadata: dict, filter: dict | None) -> bool:
     return True
 
 
+_COMPLAINT_MARKERS = (
+    "confusing", "unclear", "nothing is labeled", "did not know", "didn't know",
+    "no vegan", "no gluten", "wish", "shrug", "hard to eat", "could not tell",
+    "couldn't tell",
+)
+
+_PRAISE_MARKERS = (
+    "amazing", "incredible", "best ", "knowledgeable", "walked me through",
+    "give a shit", "excellent", "perfect",
+)
+
+
 def mock_llm(prompt: str) -> str:
     """Deterministic stand-in for DeepSeek.
 
@@ -244,18 +256,9 @@ def mock_llm(prompt: str) -> str:
     if "Task:" in evidence:
         evidence = evidence.split("Task:", 1)[0]
     lowered = evidence.lower()
-    complaint_markers = (
-        "confusing", "unclear", "nothing is labeled", "did not know", "didn't know",
-        "no vegan", "no gluten", "wish", "shrug", "hard to eat", "could not tell",
-        "couldn't tell",
-    )
-    praise_markers = (
-        "amazing", "incredible", "best ", "knowledgeable", "walked me through",
-        "give a shit", "excellent", "perfect",
-    )
-    if any(marker in lowered for marker in complaint_markers):
+    if any(marker in lowered for marker in _COMPLAINT_MARKERS):
         pass  # a complaint is present; fall through to the pitch
-    elif any(marker in lowered for marker in praise_markers):
+    elif any(marker in lowered for marker in _PRAISE_MARKERS):
         return "No relevant pain points found."
     else:
         signals = ("vegan", "gluten", "allerg", "celiac", "ingredient", "calorie", "menu")
@@ -272,3 +275,19 @@ def mock_llm(prompt: str) -> str:
         "structured ingredient and allergen data, so guests get answers before "
         "they order -- reducing staff time and protecting average check size."
     )
+
+
+def mock_classify(text: str) -> str:
+    """Deterministic stand-in for the review classifier.
+
+    Returns the same two-line contract DeepSeek is asked to produce, so the
+    parser and the quote-required guardrail are exercised offline.
+    """
+    lowered = (text or "").lower()
+    cleaned = " ".join((text or "").split())[:300]
+
+    if any(marker in lowered for marker in _COMPLAINT_MARKERS):
+        return f"LABEL: COMPLAINT\nQUOTE: {cleaned}"
+    if any(marker in lowered for marker in _PRAISE_MARKERS):
+        return "LABEL: PRAISE\nQUOTE: NONE"
+    return "LABEL: IRRELEVANT\nQUOTE: NONE"

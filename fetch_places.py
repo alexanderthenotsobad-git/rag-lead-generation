@@ -7,6 +7,7 @@ text query, and price levels before running ingest_data.py.
 Example:
     python fetch_places.py --max-results 20
     python fetch_places.py --box 34.02,-118.28,34.07,-118.22 --price-level MODERATE
+    python fetch_places.py --area santa-monica --text-query "healthy restaurant"
     python fetch_places.py --mock
 """
 
@@ -19,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from rag_leads.config import DEFAULT_BOX, Rectangle, load_settings  # noqa: E402
+from rag_leads.config import AREA_BOXES, DEFAULT_BOX, Rectangle, load_settings  # noqa: E402
 from rag_leads.places import search_restaurants  # noqa: E402
 
 
@@ -30,6 +31,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--price-level", action="append", default=None)
     parser.add_argument("--box", default=None,
                         help="low_lat,low_lng,high_lat,high_lng")
+    parser.add_argument("--area", choices=sorted(AREA_BOXES), default=None,
+                        help="named bounding box (central-la or santa-monica)")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--mock", action="store_true")
     return parser.parse_args(argv)
@@ -37,9 +40,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.area and args.box:
+        print("Use either --area or --box, not both", file=sys.stderr)
+        return 2
     try:
         settings = load_settings(required=["places"], mode="mock" if args.mock else None)
-        box = Rectangle.parse(args.box) if args.box else DEFAULT_BOX
+        if args.area:
+            box = AREA_BOXES[args.area]
+        elif args.box:
+            box = Rectangle.parse(args.box)
+        else:
+            box = DEFAULT_BOX
     except Exception as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2

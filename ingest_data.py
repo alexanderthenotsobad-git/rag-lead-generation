@@ -9,6 +9,8 @@ Examples
     python ingest_data.py --mock --max-restaurants 3
     python ingest_data.py --max-restaurants 5 --dry-run
     python ingest_data.py --max-restaurants 5 --yes
+    python ingest_data.py --area santa-monica --max-restaurants 10 \
+        --text-query "healthy restaurant" --dry-run
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from rag_leads.config import (  # noqa: E402
+    AREA_BOXES,
     DEFAULT_BOX,
     Settings,
     estimate_hasdata_credits,
@@ -42,6 +45,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--box", default=None,
                         help="low_lat,low_lng,high_lat,high_lng "
                              "(default 34.02,-118.28,34.07,-118.22)")
+    parser.add_argument("--area", choices=sorted(AREA_BOXES), default=None,
+                        help="named bounding box (central-la or santa-monica)")
     parser.add_argument("--max-reviews", type=int, default=50,
                         help="cap reviews embedded per restaurant (default 50)")
     parser.add_argument("--max-pages", type=int, default=1,
@@ -53,6 +58,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--mock", action="store_true", help="force offline fixtures")
     parser.add_argument("--no-create-index", action="store_true",
                         help="fail instead of creating a missing index")
+    parser.add_argument("--candidates-only", action="store_true",
+                        help="embed only reviews passing the rating+keyword gate; "
+                             "drops praise/irrelevant reviews and the anti-pain path")
     return parser.parse_args(argv)
 
 
@@ -76,7 +84,15 @@ def main(argv: list[str] | None = None) -> int:
 
     from rag_leads.config import Rectangle
 
-    box = Rectangle.parse(args.box) if args.box else DEFAULT_BOX
+    if args.area and args.box:
+        print("Use either --area or --box, not both", file=sys.stderr)
+        return 2
+    if args.area:
+        box = AREA_BOXES[args.area]
+    elif args.box:
+        box = Rectangle.parse(args.box)
+    else:
+        box = DEFAULT_BOX
 
     print(f"Mode: {settings.mode.upper()}")
     print(f"Index: {settings.pinecone_index_name} / namespace {settings.namespace}")
@@ -141,8 +157,22 @@ def main(argv: list[str] | None = None) -> int:
             total_credits += batch.credits_spent
             reviews = batch.reviews[: args.max_reviews]
             records = build_records(place, reviews)
+            if args.candidates_only:
+                total_reviews = len(records)
+                records = [
+                    record
+                    for record in records
+                    if record["metadata"].get("complaint_candidate")
+                ]
+                if total_reviews != len(records):
+                    print(
+                        f"  candidate gate: kept {len(records)}/{total_reviews} reviews"
+                    )
             if not records:
-                print("  no usable review text; skipped")
+                if args.candidates_only:
+                    print("  no reviews passed the candidate gate; skipped")
+                else:
+                    print("  no usable review text; skipped")
                 continue
 
             vectors = embedder.embed([r["metadata"]["text"] for r in records])
