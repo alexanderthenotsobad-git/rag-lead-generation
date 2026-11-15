@@ -14,7 +14,6 @@ from typing import Any
 import requests
 
 from .config import HASDATA_CREDITS_PER_CALL, Settings
-from .mock import MOCK_REVIEWS
 from .util import with_retries
 
 HASDATA_ENDPOINT = "https://api.hasdata.com/scrape/google-maps/reviews"
@@ -47,12 +46,6 @@ def fetch_reviews(
     """
     if not place_id:
         raise HasDataError("place_id is required")
-
-    if settings.is_mock:
-        return ReviewBatch(
-            reviews=[dict(r) for r in MOCK_REVIEWS.get(place_id, [])],
-            calls=1,
-        )
 
     headers = {"x-api-key": settings.key("hasdata_api_key")}
     batch = ReviewBatch()

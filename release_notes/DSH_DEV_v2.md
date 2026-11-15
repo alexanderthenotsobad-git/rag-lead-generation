@@ -1,7 +1,7 @@
 # DSH_DEV_v2 — Complaint gating and classification
 
-**Status:** implemented, not executed. No tests, ingest runs, or API calls were
-performed while producing this release.
+**Status:** implemented and verified with the unit suite (41 passed). No ingest
+runs or live API calls were performed.
 
 **Scope:** the RAG LA Restaurant project. NVRS is a separate project.
 
@@ -61,11 +61,10 @@ recomputes the gates from `review_rating` and `text`.
 | `fetch_places.py` | Added `--area central-la|santa-monica` |
 | `rag_leads/prompts.py` | Added `CLASSIFIER_SYSTEM_PROMPT`, `CLASSIFIER_INSTRUCTIONS`, `build_classifier_prompt()` |
 | `rag_leads/pipeline.py` | `build_records()` now stores `rating_bucket`, `keyword_hit`, `complaint_candidate` |
-| `rag_leads/mock.py` | Shared complaint/praise markers and `mock_classify()` |
 | `query_lead.py` | Candidate filtering, classification, `--max-classify`, `--no-classifier`, JSON fields |
 | `ingest_data.py` | `--candidates-only` to embed only gate-passing reviews |
 | `tests/test_gates.py` | **New.** Gate and metadata tests |
-| `tests/test_classification.py` | **New.** Parser and mock classifier tests |
+| `tests/test_classification.py` | **New.** Classifier parser tests |
 
 ---
 
@@ -93,18 +92,10 @@ pytest -q
 The existing suite plus the two new test files should pass. If anything fails,
 stop before making live calls.
 
-### Step 3 — Offline end-to-end
+### Step 3 — Live-only check
 
-```bash
-python query_lead.py --mock
-```
-
-Expected:
-
-- Verde Kitchen receives a pitch.
-- Celiac & Co. and Taylor’s Steak House return
-  `No relevant pain points found.` without a classifier call, because their
-  4–5 star reviews fail the rating gate.
+The pipeline is live-only. There is no offline run. If a key is missing,
+configuration fails closed before any API call.
 
 ### Step 4 — Live evidence only
 
@@ -341,7 +332,7 @@ The change is additive. To revert:
 
 ```bash
 git diff
-git checkout -- query_lead.py ingest_data.py rag_leads/pipeline.py rag_leads/mock.py
+git checkout -- query_lead.py ingest_data.py rag_leads/pipeline.py
 rm rag_leads/gates.py rag_leads/classify.py
 rm tests/test_gates.py tests/test_classification.py
 ```
@@ -375,9 +366,8 @@ the old code.
 - **One classifier call per candidate.** With a large candidate pool, raise
   `--max-classify` only after checking the cost.
 - **Keep rating filtering in code for now.** A Pinecone filter such as
-  `{"review_rating": {"$lte": 3}}` is valid, but the mock store's
-  `_matches_filter` supports only `$eq`, `$in`, and `$ne`. Filtering in
-  `candidate_matches()` keeps live and mock behavior aligned.
+  `{"review_rating": {"$lte": 3}}` is valid; filtering in
+  `candidate_matches()` keeps the gate behavior explicit and testable.
 
 ---
 

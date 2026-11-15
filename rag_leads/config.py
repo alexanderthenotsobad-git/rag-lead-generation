@@ -3,6 +3,9 @@
 One rule matters more than the rest: the embedding model is
 ``all-MiniLM-L6-v2`` which produces **384** dimensions.  The Pinecone index
 must match that exactly.  Gemini is intentionally absent from this codebase.
+
+This pipeline is live-only.  If a required key is missing, configuration fails
+closed before any API call.
 """
 
 from __future__ import annotations
@@ -95,7 +98,6 @@ class Rectangle:
 
 @dataclass(frozen=True)
 class Settings:
-    mode: str  # "live" or "mock"
     pinecone_api_key: str | None
     pinecone_index_name: str
     namespace: str
@@ -104,16 +106,11 @@ class Settings:
     huggingface_api_token: str | None
     deepseek_api_key: str | None
 
-    @property
-    def is_mock(self) -> bool:
-        return self.mode == "mock"
-
     def key(self, name: str) -> str:
         value = getattr(self, name)
         if not value:
             raise ConfigError(
-                f"{name} is not set. Add it to .env or export it in the shell. "
-                "Run with --mock to exercise the pipeline without API calls."
+                f"{name} is not set. Add it to .env or export it in the shell."
             )
         return value
 
@@ -143,21 +140,9 @@ def _first_env(names: Iterable[str]) -> str | None:
     return None
 
 
-def load_settings(
-    required: Sequence[str] = (),
-    mode: str | None = None,
-) -> Settings:
-    """Load settings and resolve mock vs live mode.
-
-    ``mode`` is ``live``, ``mock``, or ``auto`` (default).  In ``auto`` mode the
-    pipeline falls back to mock only when a key required *for this command* is
-    missing, so ``fetch_data.py`` can talk to Pinecone without a HasData key.
-    """
+def load_settings(required: Sequence[str] = ()) -> Settings:
+    """Load live settings and fail closed if a required key is missing."""
     load_dotenv(override=False)
-
-    raw_mode = (mode or os.getenv("RAG_MODE", "auto")).strip().lower()
-    if raw_mode not in {"auto", "live", "mock"}:
-        raise ConfigError(f"RAG_MODE must be auto, live, or mock (got {raw_mode!r})")
 
     missing: list[str] = []
     for group in required:
@@ -169,18 +154,14 @@ def load_settings(
             if not _first_env(_ENV_ALIASES[field]):
                 missing.append(field)
 
-    if raw_mode == "auto":
-        raw_mode = "mock" if missing else "live"
-
-    if raw_mode == "live" and missing:
+    if missing:
         raise ConfigError(
-            "live mode requested but missing keys: "
+            "missing required keys: "
             + ", ".join(sorted(set(missing)))
-            + ". Use --mock for an offline run."
+            + ". Add them to .env or export them in the shell."
         )
 
     return Settings(
-        mode=raw_mode,
         pinecone_api_key=_first_env(_ENV_ALIASES["pinecone_api_key"]),
         pinecone_index_name=os.getenv("PINECONE_INDEX_NAME", INDEX_NAME_DEFAULT),
         namespace=os.getenv("PINECONE_NAMESPACE", NAMESPACE),

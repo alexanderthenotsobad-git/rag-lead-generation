@@ -6,7 +6,6 @@ This is the only script that writes to Pinecone.  Keeping it separate from
 
 Examples
 --------
-    python ingest_data.py --mock --max-restaurants 3
     python ingest_data.py --max-restaurants 5 --dry-run
     python ingest_data.py --max-restaurants 5 --yes
     python ingest_data.py --area santa-monica --max-restaurants 10 \
@@ -55,7 +54,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="discover and print the plan without spending credits")
     parser.add_argument("--yes", action="store_true",
                         help="confirm live HasData spending")
-    parser.add_argument("--mock", action="store_true", help="force offline fixtures")
     parser.add_argument("--no-create-index", action="store_true",
                         help="fail instead of creating a missing index")
     parser.add_argument("--candidates-only", action="store_true",
@@ -73,10 +71,9 @@ def main(argv: list[str] | None = None) -> int:
         print("--max-pages must be >= 1", file=sys.stderr)
         return 2
 
-    mode = "mock" if args.mock else None
     try:
         settings: Settings = load_settings(
-            required=["pinecone", "places", "hasdata", "embeddings"], mode=mode
+            required=["pinecone", "places", "hasdata", "embeddings"]
         )
     except Exception as exc:  # ConfigError
         print(f"Configuration error: {exc}", file=sys.stderr)
@@ -94,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         box = DEFAULT_BOX
 
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     print(f"Index: {settings.pinecone_index_name} / namespace {settings.namespace}")
     print("Discovering restaurants via Google Places Text Search...")
     try:
@@ -123,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\nDry run: no credits spent, nothing written.")
         return 0
 
-    if not settings.is_mock and not args.yes:
+    if not args.yes:
         print(
             "\nRefusing to spend credits without confirmation. Re-run with --yes.",
             file=sys.stderr,

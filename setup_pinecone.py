@@ -9,7 +9,6 @@ creates only when missing, verifies the dimension when present, and requires
 Examples:
     python setup_pinecone.py
     python setup_pinecone.py --recreate --yes   # destructive, explicit
-    python setup_pinecone.py --mock
 """
 
 from __future__ import annotations
@@ -30,7 +29,6 @@ def main(argv: list[str] | None = None) -> int:
                         help="delete and rebuild an existing/wrong-dimension index")
     parser.add_argument("--yes", action="store_true",
                         help="confirm the destructive --recreate action")
-    parser.add_argument("--mock", action="store_true")
     args = parser.parse_args(argv)
 
     if args.recreate and not args.yes:
@@ -38,13 +36,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        settings = load_settings(required=["pinecone"], mode="mock" if args.mock else None)
+        settings = load_settings(required=["pinecone"])
     except Exception as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
 
     store = VectorStore(settings)
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     try:
         info = store.ensure_index(
             recreate=args.recreate, confirm_recreate=args.yes

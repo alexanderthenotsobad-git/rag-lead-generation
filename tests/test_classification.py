@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from rag_leads.classify import ReviewClassifier, parse_classification
-from rag_leads.config import load_settings
-from rag_leads.mock import mock_classify
+from rag_leads.classify import parse_classification
 
 
 def test_parse_label_and_quote():
@@ -26,29 +24,9 @@ def test_unknown_label_is_irrelevant():
     assert label == "IRRELEVANT"
 
 
-def test_mock_classify_contract():
-    assert mock_classify(
-        "The menu is confusing and nothing is labeled."
-    ).startswith("LABEL: COMPLAINT")
-    assert mock_classify(
-        "Amazing options for celiacs; knowledgeable staff."
-    ).startswith("LABEL: PRAISE")
-    assert mock_classify(
-        "Great steak and friendly service."
-    ).startswith("LABEL: IRRELEVANT")
-
-
-def test_classifier_mock_mode():
-    settings = load_settings(mode="mock")
-    classifier = ReviewClassifier(settings)
-
-    complaint_label, complaint_quote = classifier.classify(
-        "The menu is confusing and nothing is labeled."
+def test_praise_preserves_quote():
+    label, quote = parse_classification(
+        'LABEL: PRAISE\nQUOTE: "They were wonderful about my allergy."'
     )
-    assert complaint_label == "COMPLAINT"
-    assert complaint_quote
-
-    praise_label, _ = classifier.classify(
-        "Amazing options for celiacs; knowledgeable staff."
-    )
-    assert praise_label == "PRAISE"
+    assert label == "PRAISE"
+    assert quote == "They were wonderful about my allergy."

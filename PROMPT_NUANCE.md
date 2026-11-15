@@ -337,8 +337,8 @@ The second is more robust but touches `query_lead.py`.
 - Snapshot-test `build_pitch_prompt()` output for each variant.
 - Run the same labelled review set across prompt variants and compare
   precision/recall; do not judge a prompt by one output.
-- Keep the mock corpus (`rag_leads/mock.py`) as the regression fixture: the
-  praise review must still be refused.
+- Keep a labelled review set as the regression set: the praise review must
+  still be refused.
 
 ---
 

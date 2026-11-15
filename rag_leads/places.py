@@ -12,7 +12,6 @@ from typing import Sequence
 import requests
 
 from .config import DEFAULT_BOX, DEFAULT_PRICE_LEVELS, Rectangle, Settings
-from .mock import MOCK_PLACES
 from .util import with_retries
 
 PLACES_ENDPOINT = "https://places.googleapis.com/v1/places:searchText"
@@ -74,13 +73,6 @@ def search_restaurants(
 
     rectangle = box if isinstance(box, Rectangle) else Rectangle(*box)
     levels = normalize_price_levels(price_levels)
-
-    if settings.is_mock:
-        return [
-            dict(place)
-            for place in MOCK_PLACES
-            if place["price_level"] in levels
-        ][:max_results]
 
     payload = {
         "textQuery": text_query,

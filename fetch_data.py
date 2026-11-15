@@ -3,7 +3,6 @@
 
 Example:
     python fetch_data.py
-    python fetch_data.py --mock
 """
 
 from __future__ import annotations
@@ -20,11 +19,10 @@ from rag_leads.store import VectorStore  # noqa: E402
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mock", action="store_true")
-    args = parser.parse_args(argv)
+    parser.parse_args(argv)
 
     try:
-        settings = load_settings(required=["pinecone"], mode="mock" if args.mock else None)
+        settings = load_settings(required=["pinecone"])
     except Exception as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
@@ -37,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     dimension = stats.get("dimension")
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     print(f"Index: {settings.pinecone_index_name}")
     print(f"Total records in index: {stats['total_vector_count']}")
     print(f"Dimension: {dimension} (expected {EMBED_DIM})")

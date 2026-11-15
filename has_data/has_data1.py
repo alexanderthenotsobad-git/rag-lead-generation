@@ -6,7 +6,6 @@ Costs 10 credits per page.  Always run this on 2-5 restaurants before scaling.
 Example:
     python has_data/has_data1.py --place-id ChIJj6arSYLHwoAROfRRqiOfX2s
     python has_data/has_data1.py --place-id ChIJ... --yes --max-pages 1
-    python has_data/has_data1.py --place-id ChIJ... --mock
 """
 
 from __future__ import annotations
@@ -28,7 +27,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-pages", type=int, default=1)
     parser.add_argument("--yes", action="store_true", help="confirm credit spend")
     parser.add_argument("--json", action="store_true", help="dump raw review JSON")
-    parser.add_argument("--mock", action="store_true")
     args = parser.parse_args(argv)
 
     if args.max_pages < 1:
@@ -36,13 +34,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        settings = load_settings(required=["hasdata"], mode="mock" if args.mock else None)
+        settings = load_settings(required=["hasdata"])
     except Exception as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
 
     cost = args.max_pages * HASDATA_CREDITS_PER_CALL
-    if not settings.is_mock and not args.yes:
+    if not args.yes:
         print(
             f"This will call HasData up to {args.max_pages} time(s) "
             f"(~{cost} credits). Re-run with --yes.",
@@ -60,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(batch.reviews, indent=2))
         return 0
 
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     print(f"placeId: {args.place_id}")
     print(f"Reviews: {len(batch.reviews)}")
     print(f"Calls: {batch.calls} (~{batch.credits_spent} credits)")

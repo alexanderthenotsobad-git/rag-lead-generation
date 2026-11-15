@@ -10,7 +10,6 @@ from __future__ import annotations
 import re
 
 from .config import DEEPSEEK_BASE_URL, LLM_MODEL, Settings
-from .mock import mock_classify
 from .prompts import CLASSIFIER_SYSTEM_PROMPT, build_classifier_prompt
 from .util import with_retries
 
@@ -53,7 +52,7 @@ def parse_classification(raw: str) -> tuple[str, str]:
 
 
 class ReviewClassifier:
-    """DeepSeek-backed review classifier. Uses the deterministic fake in mock mode."""
+    """DeepSeek-backed review classifier."""
 
     def __init__(
         self,
@@ -79,9 +78,6 @@ class ReviewClassifier:
         return self._client
 
     def classify(self, review_text: str) -> tuple[str, str]:
-        if self.settings.is_mock:
-            return parse_classification(mock_classify(review_text))
-
         prompt = build_classifier_prompt(review_text)
 
         def call() -> str:

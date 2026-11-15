@@ -1,14 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from rag_leads.places import normalize_price_levels
-
-@pytest.fixture
-def no_dotenv(monkeypatch):
-    """Prevent load_dotenv() from re-reading .env during a test."""
-    monkeypatch.setattr("rag_leads.config.load_dotenv", lambda *a, **kw: None)
-
-    
 
 from rag_leads.config import (
     ConfigError,
@@ -17,6 +9,12 @@ from rag_leads.config import (
     load_settings,
 )
 from rag_leads.places import normalize_price_levels
+
+
+@pytest.fixture
+def no_dotenv(monkeypatch):
+    """Prevent load_dotenv() from re-reading .env during a test."""
+    monkeypatch.setattr("rag_leads.config.load_dotenv", lambda *a, **kw: None)
 
 
 def test_rectangle_accepts_valid_corners():
@@ -67,31 +65,8 @@ def test_price_level_rejects_unknown():
         normalize_price_levels(["CHEAP"])
 
 
-def test_mock_mode_needs_no_keys(monkeypatch):
-    for key in (
-        "PINECONE_API_KEY",
-        "HASDATA_API_KEY",
-        "GOOGLE_PLACES_API_KEY",
-        "HUGGINGFACE_API_TOKEN",
-        "HF_TOKEN",
-        "DEEPSEEK_API_KEY",
-        "RAG_MODE",
-    ):
-        monkeypatch.delenv(key, raising=False)
-    settings = load_settings(required=["pinecone", "embeddings"], mode="mock")
-    assert settings.is_mock
-    assert settings.mode == "mock"
-
-
-def test_auto_mode_falls_back_to_mock_without_keys(monkeypatch, no_dotenv):
-    for key in ("PINECONE_API_KEY", "HUGGINGFACE_API_TOKEN", "HF_TOKEN", "RAG_MODE"):
-        monkeypatch.delenv(key, raising=False)
-    settings = load_settings(required=["pinecone", "embeddings"])
-    assert settings.is_mock
-
-
-def test_live_mode_fails_fast_without_keys(monkeypatch, no_dotenv):
-    for key in ("PINECONE_API_KEY", "RAG_MODE"):
+def test_missing_keys_fail_closed(monkeypatch, no_dotenv):
+    for key in ("PINECONE_API_KEY", "HASDATA_API_KEY", "GOOGLE_PLACES_API_KEY"):
         monkeypatch.delenv(key, raising=False)
     with pytest.raises(ConfigError):
-        load_settings(required=["pinecone"], mode="live")
+        load_settings(required=["pinecone"])

@@ -17,7 +17,6 @@ from __future__ import annotations
 from typing import Sequence
 
 from .config import EMBED_DIM, EMBED_MODEL, MAX_EMBED_CHARS, Settings
-from .mock import mock_embed_text
 from .util import batched, l2_normalize, mean_rows, truncate_for_embedding, with_retries
 
 
@@ -105,7 +104,7 @@ def coerce_vectors(raw: object, expected_count: int, dim: int = EMBED_DIM) -> li
 
 
 class EmbeddingClient:
-    """Batch embedder.  Uses a deterministic fake in mock mode."""
+    """Batch embedder for the live Hugging Face Inference API."""
 
     def __init__(self, settings: Settings, batch_size: int = 32) -> None:
         self.settings = settings
@@ -125,9 +124,6 @@ class EmbeddingClient:
             return []
         if any(not text for text in cleaned):
             raise EmbeddingError("refusing to embed empty text")
-
-        if self.settings.is_mock:
-            return [mock_embed_text(text) for text in cleaned]
 
         vectors: list[list[float]] = []
         for batch in batched(cleaned, self.batch_size):

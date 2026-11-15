@@ -8,7 +8,6 @@ Example:
     python fetch_places.py --max-results 20
     python fetch_places.py --box 34.02,-118.28,34.07,-118.22 --price-level MODERATE
     python fetch_places.py --area santa-monica --text-query "healthy restaurant"
-    python fetch_places.py --mock
 """
 
 from __future__ import annotations
@@ -34,7 +33,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--area", choices=sorted(AREA_BOXES), default=None,
                         help="named bounding box (central-la or santa-monica)")
     parser.add_argument("--json", action="store_true")
-    parser.add_argument("--mock", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -44,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Use either --area or --box, not both", file=sys.stderr)
         return 2
     try:
-        settings = load_settings(required=["places"], mode="mock" if args.mock else None)
+        settings = load_settings(required=["places"])
         if args.area:
             box = AREA_BOXES[args.area]
         elif args.box:
@@ -55,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
 
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     try:
         places = search_restaurants(
             settings,

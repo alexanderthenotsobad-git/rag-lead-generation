@@ -10,7 +10,6 @@ from rag_leads.store import VectorStore, VectorStoreError
 
 def _live_settings() -> Settings:
     return Settings(
-        mode="live",
         pinecone_api_key="test-key",
         pinecone_index_name="idx",
         namespace="restaurants",

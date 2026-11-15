@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from .config import DEEPSEEK_BASE_URL, LLM_MODEL, Settings
-from .mock import mock_llm
 from .prompts import SYSTEM_PROMPT
 from .util import with_retries
 
@@ -32,9 +31,6 @@ class PitchGenerator:
         return self._client
 
     def generate(self, prompt: str) -> str:
-        if self.settings.is_mock:
-            return mock_llm(prompt)
-
         def call() -> str:
             response = self._live_client().chat.completions.create(
                 model=LLM_MODEL,

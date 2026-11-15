@@ -12,7 +12,6 @@ Only COMPLAINT reviews feed the pitch prompt.
 
 Examples
 --------
-    python query_lead.py --mock
     python query_lead.py --no-llm --top-k 50
     python query_lead.py --restaurants 3 --max-classify 5
 """
@@ -54,7 +53,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--margin", type=float, default=0.0,
                         help="evidence margin fraction below the top score (default 0)")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    parser.add_argument("--mock", action="store_true", help="force offline fixtures")
     return parser.parse_args(argv)
 
 
@@ -67,10 +65,9 @@ def main(argv: list[str] | None = None) -> int:
         print("--max-classify must be >= 1 unless --no-classifier is set", file=sys.stderr)
         return 2
 
-    mode = "mock" if args.mock else None
     required = ["pinecone", "embeddings"] + ([] if args.no_llm else ["llm"])
     try:
-        settings: Settings = load_settings(required=required, mode=mode)
+        settings: Settings = load_settings(required=required)
     except Exception as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 2
@@ -84,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args.no_llm and not args.no_classifier:
         classifier = ReviewClassifier(settings)
 
-    print(f"Mode: {settings.mode.upper()}")
+    print("Mode: LIVE")
     print(f"Index: {settings.pinecone_index_name} / namespace {settings.namespace}")
     print(f"Filter: price_level in {levels}")
     print(f"Classifier: {'off' if classifier is None else 'on'}")

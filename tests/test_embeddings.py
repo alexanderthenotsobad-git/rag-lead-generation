@@ -6,7 +6,6 @@ import pytest
 
 from rag_leads.config import EMBED_DIM
 from rag_leads.embeddings import EmbeddingError, coerce_vectors
-from rag_leads.mock import mock_embed_text
 
 
 def _norm(vector: list[float]) -> float:
@@ -54,13 +53,3 @@ def test_wrong_dimension_raises():
 def test_single_vector_for_many_inputs_raises():
     with pytest.raises(EmbeddingError):
         coerce_vectors([0.1] * EMBED_DIM, expected_count=3)
-
-
-def test_mock_embedding_is_deterministic_and_normalized():
-    a = mock_embed_text("no vegan options and the menu is confusing")
-    b = mock_embed_text("no vegan options and the menu is confusing")
-    c = mock_embed_text("great steak and attentive service")
-    assert a == b
-    assert a != c
-    assert len(a) == EMBED_DIM
-    assert _norm(a) == pytest.approx(1.0)
