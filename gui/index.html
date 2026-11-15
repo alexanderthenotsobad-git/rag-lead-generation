@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>RAG Lead Console — LA Restaurant Pipeline</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>RAG Lead Console</h1>
+      <p class="subtitle">Places → HasData → Hugging Face → Pinecone → DeepSeek</p>
+    </div>
+    <span class="badge">LIVE ONLY</span>
+  </header>
+
+  <main class="layout">
+    <p class="notice">
+      Keys are loaded server-side from <code>.env</code> by
+      <code>gui_server.py</code> and never reach this page. If a provider fails,
+      the exact error appears under that API.
+    </p>
+
+    <section class="panel" aria-labelledby="apiHeading">
+      <div class="panel-head">
+        <h2 id="apiHeading">1 · API configuration</h2>
+        <button type="button" id="validateBtn" class="btn ghost">Validate backend</button>
+      </div>
+
+      <div class="api-grid">
+        <article class="api-card">
+          <div class="api-head">
+            <h3>Google Places</h3>
+            <span class="dot" id="googleDot" aria-hidden="true"></span>
+          </div>
+          <label for="googleService">Service</label>
+          <select id="googleService">
+            <option value="places-geocode">Places Text Search (New) + Geocoding</option>
+          </select>
+          <p class="hint">
+            Enable Places API (New) and Geocoding API. Key loaded from
+            <code>.env</code>.
+          </p>
+          <p class="api-note" id="googleNote" role="status" aria-live="polite"></p>
+        </article>
+
+        <article class="api-card">
+          <div class="api-head">
+            <h3>HasData</h3>
+            <span class="dot" id="hasdataDot" aria-hidden="true"></span>
+          </div>
+          <label for="hasdataService">Service</label>
+          <select id="hasdataService">
+            <option value="google-maps-reviews">Google Maps Reviews</option>
+          </select>
+          <p class="hint">Key loaded from <code>.env</code>.</p>
+          <p class="api-note" id="hasdataNote" role="status" aria-live="polite"></p>
+        </article>
+
+        <article class="api-card">
+          <div class="api-head">
+            <h3>Hugging Face</h3>
+            <span class="dot" id="hfDot" aria-hidden="true"></span>
+          </div>
+          <label for="hfService">Model</label>
+          <select id="hfService">
+            <option value="minilm">all-MiniLM-L6-v2 · 384 dims</option>
+          </select>
+          <p class="hint">Token loaded from <code>.env</code>.</p>
+          <p class="api-note" id="hfNote" role="status" aria-live="polite"></p>
+        </article>
+
+        <article class="api-card">
+          <div class="api-head">
+            <h3>DeepSeek</h3>
+            <span class="dot" id="deepseekDot" aria-hidden="true"></span>
+          </div>
+          <label for="deepseekService">Model</label>
+          <select id="deepseekService">
+            <option value="deepseek-chat">deepseek-chat</option>
+          </select>
+          <p class="hint">Key loaded from <code>.env</code>.</p>
+          <p class="api-note" id="deepseekNote" role="status" aria-live="polite"></p>
+        </article>
+
+        <article class="api-card">
+          <div class="api-head">
+            <h3>Pinecone</h3>
+            <span class="dot" id="pineconeDot" aria-hidden="true"></span>
+          </div>
+          <label for="pineconeService">Index</label>
+          <select id="pineconeService">
+            <option value="rag-lead-idx">rag-lead-idx · 384 · cosine</option>
+          </select>
+          <p class="hint">Key loaded from <code>.env</code>.</p>
+          <p class="api-note" id="pineconeNote" role="status" aria-live="polite"></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="runHeading">
+      <h2 id="runHeading">2 · Run configuration</h2>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="zip">ZIP code</label>
+          <input id="zip" inputmode="numeric" maxlength="5" placeholder="90015" value="90015">
+          <p class="hint">
+            The ZIP is geocoded to its Google viewport and used as the pipeline's
+            rectangular <code>locationRestriction</code>: low = southwest corner,
+            high = northeast corner. This matches the zone criteria in the files —
+            a rectangle, not a radius.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="maxRestaurants">Restaurants to query through HasData</label>
+          <input id="maxRestaurants" type="number" min="1" max="20" step="1" value="5">
+          <p class="hint" id="creditHint">5 HasData review calls ≈ 50 credits.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="query">Query / prompt</label>
+        <textarea id="query" rows="4" spellcheck="false">Customers with a food allergy, intolerance, or celiac disease who could not get clear information about ingredients, allergens, or cross-contamination, or which dishes were safe to eat, and felt the staff were guessing or unsure.</textarea>
+        <p class="hint">
+          This text is embedded for retrieval and injected into the pitch prompt
+          below as the analyst focus.
+        </p>
+      </div>
+
+      <details class="disclosure">
+        <summary>Prompt preview (linked to the query field)</summary>
+        <pre id="promptPreview" class="preview"></pre>
+      </details>
+
+      <div class="actions">
+        <button type="button" id="runBtn" class="btn primary">Run pipeline</button>
+        <button type="button" id="clearBtn" class="btn ghost">Clear output</button>
+        <span id="runStatus" class="run-status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="outputHeading">
+      <div class="panel-head">
+        <h2 id="outputHeading">3 · Output</h2>
+        <button type="button" id="copyBtn" class="btn ghost">Copy output</button>
+      </div>
+      <textarea id="output" class="output" rows="22" readonly spellcheck="false"
+        placeholder="Restaurants, candidate reviews, and pitches appear here. Select all and copy."></textarea>
+      <div id="progress" class="progress" role="log" aria-live="polite"></div>
+    </section>
+
+    <details class="panel spec">
+      <summary>Technical spec &amp; revision log</summary>
+      <div class="spec-body">
+        <h3>Architecture</h3>
+        <p>
+          Served by <code>gui_server.py</code>. The browser calls local
+          <code>/api</code> endpoints; the server loads keys from <code>.env</code>
+          and calls each provider. The pipeline mirrors <code>rag_leads/</code>:
+          discover restaurants, fetch reviews, gate by rating and keyword, embed
+          with MiniLM (384 dims), upsert to Pinecone, retrieve the query, classify
+          complaints with DeepSeek, and generate one pitch per restaurant.
+        </p>
+        <p>
+          Run <code>python gui_server.py</code> from the repo root, then open
+          <code>http://127.0.0.1:8080</code>.
+        </p>
+
+        <h3>Zoning</h3>
+        <p>
+          The pipeline requires a rectangle. The ZIP is geocoded with Google and
+          its <code>viewport</code> supplies <code>low</code> (southwest) and
+          <code>high</code> (northeast). This is the same shape used by
+          <code>DEFAULT_BOX</code> and <code>SANTA_MONICA_BOX</code> in
+          <code>rag_leads/config.py</code>.
+        </p>
+
+        <h3>Gate order</h3>
+        <ol>
+          <li>Rating: 1–3 stars are complaint candidates; 4–5 are praise.</li>
+          <li>Keyword: allergen, ingredient, or dietary term must appear.</li>
+          <li>Classifier: DeepSeek returns COMPLAINT / PRAISE / IRRELEVANT with a quote.</li>
+        </ol>
+        <p>Only COMPLAINT reviews feed the pitch prompt. Otherwise the output is <code>No relevant pain points found.</code></p>
+
+        <h3>Errors</h3>
+        <p>
+          Every API card owns a status line. HTTP status, provider message, and
+          network/CORS failures are written there and in the progress log.
+        </p>
+
+        <h3>Revision log</h3>
+        <ul>
+          <li><strong>Phase 1 — Layout:</strong> v1 stacked form; v2 responsive API grid; v3 per-card status lines and accessible focus states.</li>
+          <li><strong>Phase 2 — API layer:</strong> v1 direct fetch; v2 retry/backoff for 429/5xx; v3 provider-specific error extraction and CORS messaging.</li>
+          <li><strong>Phase 3 — Pipeline:</strong> v1 linear calls; v2 grouping and gates; v3 complaint-only prompt, copy-friendly output, and prompt preview.</li>
+        </ul>
+
+        <h3>Limits</h3>
+        <ul>
+          <li>Keys stay in <code>.env</code>; the browser never receives them.</li>
+          <li>The server binds to <code>127.0.0.1</code>. Do not expose it publicly without authentication.</li>
+          <li>HasData costs 10 credits per restaurant; the field caps calls at 20.</li>
+        </ul>
+      </div>
+    </details>
+  </main>
+</body>
+</html>
